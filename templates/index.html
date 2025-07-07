@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>醫美問答聊天機器人</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+        <h1 class="text-2xl font-bold text-center mb-4">醫美問答 with Caroline</h1>
+        <div id="chat-container" class="h-96 overflow-y-auto mb-4 p-4 border border-gray-300 rounded"></div>
+        <div class="flex">
+            <input id="query-input" type="text" class="flex-1 p-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="輸入您的問題或 'exit' 退出...">
+            <button id="send-btn" class="p-2 bg-blue-500 text-white rounded-r hover:bg-blue-600">發送</button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const queryInput = document.getElementById('query-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        function addMessage(role, content, chatId) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `mb-2 p-2 rounded ${role === 'user' ? 'bg-blue-100 text-right' : 'bg-gray-200 text-left'}`;
+            messageDiv.innerHTML = `<strong>${role === 'user' ? '您' : '機器人'}:</strong> ${content}`;
+            messageDiv.dataset.chatId = chatId;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendQuery() {
+            const query = queryInput.value.trim();
+            if (!query) {
+                alert('請輸入問題！');
+                return;
+            }
+
+            addMessage('user', query, 'temp-' + Date.now());
+            queryInput.value = '';
+            sendBtn.disabled = true;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+
+                if (data.error) {
+                    addMessage('bot', data.error, data.chat_id);
+                } else {
+                    addMessage('bot', data.answer, data.chat_id);
+                    if (data.exit) {
+                        setTimeout(() => {
+                            alert('聊天機器人已關閉。');
+                            queryInput.disabled = true;
+                            sendBtn.disabled = true;
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                addMessage('bot', '抱歉，無法連接到服務器，請稍後再試。', 'error-' + Date.now());
+            }
+
+            sendBtn.disabled = false;
+        }
+
+        sendBtn.addEventListener('click', sendQuery);
+        queryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendQuery();
+        });
+    </script>
+</body>
+</html>

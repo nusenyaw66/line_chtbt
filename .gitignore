@@ -1,0 +1,9 @@
+.DS_Store
+.env
+poetry.lock
+db
+books
+chatbot.conf
+chatbot.log
+nginx.conf
+project_note.md
