@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 from langchain_chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from openai import OpenAI
 import tiktoken
@@ -15,7 +16,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Define the persistent directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-db_name = "hugging_face_chroma_with_metadata"
+db_name = "hugging_face_FAISS_with_metadata"
+# db_name = "hugging_face_chroma_with_metadata"
 vector_store_path = os.path.join(current_dir, "db", db_name)
 
 # Retrieve OpenAI API key from environment variables
@@ -34,8 +36,14 @@ chat_history = []
 embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
 
+# Load the vector store
+vector_store = FAISS.load_local(folder_path=vector_store_path, 
+    embeddings=embeddings,
+    allow_dangerous_deserialization=True  # Required for loading pickled metadata
+)
+
 # Load the Chroma vector store
-vector_store = Chroma(persist_directory=vector_store_path, embedding_function=embeddings)
+#vector_store = Chroma(persist_directory=vector_store_path, embedding_function=embeddings)
 
 # Initialize tiktoken encoder for token counting
 tokenizer = tiktoken.encoding_for_model("gpt-4o")

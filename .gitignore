@@ -7,3 +7,4 @@ chatbot.conf
 chatbot.log
 nginx.conf
 project_note.md
+__pycache__

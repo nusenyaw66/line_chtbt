@@ -11,7 +11,8 @@ from langchain_chroma import Chroma
 current_dir = os.path.dirname(os.path.abspath(__file__))
 books_dir = os.path.join(current_dir, "books")
 db_dir = os.path.join(current_dir, "db")
-db_name = "hugging_face_chroma_with_metadata"
+# db_name = "hugging_face_chroma_with_metadata"
+db_name = "hugging_face_FAISS_with_metadata"
 
 print(f"Books directory: {books_dir}")
 print(f"DB directory: {db_dir}")
@@ -128,8 +129,8 @@ def main():
         
         # Step 3: Create the vector store and persist it
         # Use FAISS or Chroma based on your preference
-        # create_vector_store(documents, persistent_directory, embeddings)
-        create_chroma_vector_store(documents, persistent_directory, embeddings)
+        create_vector_store(documents, persistent_directory, embeddings)
+        # create_chroma_vector_store(documents, persistent_directory, embeddings)
 
     else:
         print("Vector store already exists. No need to initialize.")

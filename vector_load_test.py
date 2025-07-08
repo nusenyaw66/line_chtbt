@@ -7,8 +7,10 @@ from langchain_chroma import Chroma
 # Define the directory containing the text files and the persistent directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 db_dir = os.path.join(current_dir, "db")
-# db_name = "hugging_face_with_metadata"
-db_name = "hugging_face_chroma_with_metadata"
+
+db_name = "hugging_face_FAISS_with_metadata"
+# db_name = "hugging_face_chroma_with_metadata"
+
 persistent_db = os.path.join(db_dir, db_name)
 
 def load_vector_store(db_path, embeddings):
@@ -66,9 +68,9 @@ def main():
         model_kwargs={"device": "cpu"}  # Change to "cuda" for GPU
     )
     
-    # Load vector store
-    #vector_store = load_vector_store(persistent_db, embeddings)
-    vector_store = load_chroma_vector_store(persistent_db, embeddings)
+    # Load vector store from the persistent directory with Chroma or FAISS
+    vector_store = load_vector_store(persistent_db, embeddings)
+    # vector_store = load_chroma_vector_store(persistent_db, embeddings)
     
     # Test the vector store (optional)
     if vector_store:
@@ -76,7 +78,7 @@ def main():
         results = vector_store.similarity_search(query, k=3)
         print("\nQuery Results:")
         for doc in results:
-            print(f"Index: {doc.metadata['index']}")
+            print(f"Index: {doc.metadata['index']}") 
             print(f"Question: {doc.page_content}")
             # print(f"Answer: {doc.metadata['answer']}")
             print(f"Category: {doc.metadata['category']}")

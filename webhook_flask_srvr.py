@@ -3,8 +3,8 @@ from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi, ReplyMessageRequest, TextMessage
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
-# from qa_chatbot import qa_line_chatbot
-from qa_chatbot_local_llm import qa_line_chatbot
+from qa_chatbot import qa_line_chatbot
+# from qa_chatbot_local_llm import qa_line_chatbot
 
 from dotenv import load_dotenv
 import os
