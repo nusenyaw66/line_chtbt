@@ -1,0 +1,12 @@
+flask==3.0.3
+line-bot-sdk==3.17.1
+python-dotenv==1.1.1
+gunicorn==23.0.0
+langchain-core==0.3.68
+langchain==0.3.26
+langchain-community==0.3.27
+langchain-huggingface==0.1.2
+openai==1.93.0
+pandas==2.3.0
+tiktoken==0.9.0
+faiss-cpu==1.11.0

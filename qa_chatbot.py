@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 import pandas as pd
-from langchain_chroma import Chroma
+# from langchain_chroma import Chroma
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from openai import OpenAI

@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.git
+.gitignore
+*.md
+.venv
+poetry.lock  # Optional, if you want to rebuild dependencies in Docker

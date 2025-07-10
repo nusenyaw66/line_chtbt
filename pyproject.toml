@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bty-chtbt"
+name = "line-chtbt"
 version = "0.1.0"
 description = ""
 authors = ["nusenyaw66 <nusenyaw@gmail.com>"]
