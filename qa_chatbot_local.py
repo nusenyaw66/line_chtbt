@@ -7,7 +7,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from openai import OpenAI
 import tiktoken
-from google.cloud import storage
 
 # Load environment variables from .env
 load_dotenv()
@@ -16,51 +15,34 @@ load_dotenv()
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Define the persistent directory
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# db_name = "hugging_face_FAISS_with_metadata"
-# vector_store_path = os.path.join(current_dir, "db", db_name)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+db_name = "hugging_face_FAISS_with_metadata"
+# db_name = "hugging_face_chroma_with_metadata"
+vector_store_path = os.path.join(current_dir, "db", db_name)
 
-# GCS configuration
-BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
-VECTOR_STORE_GCS_PATH = "vector_store/hugging_face_FAISS_with_metadata"  # Path in GCS bucket
-LOCAL_VECTOR_STORE_PATH = "/tmp/hugging_face_FAISS_with_metadata"  # Temporary local path in container
+# Retrieve OpenAI API key from environment variables
+#OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def download_vector_store():
-    """Download FAISS vector store from GCS to local temp storage."""
-    if not BUCKET_NAME:
-        raise ValueError("GCS_BUCKET_NAME is not set in environment variables.")
-    client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
-    # Download all files in the GCS directory
-    blobs = bucket.list_blobs(prefix=VECTOR_STORE_GCS_PATH)
-    os.makedirs(LOCAL_VECTOR_STORE_PATH, exist_ok=True)
-    for blob in blobs:
-        local_path = os.path.join(LOCAL_VECTOR_STORE_PATH, os.path.basename(blob.name))
-        blob.download_to_filename(local_path)
-        print(f"Downloaded {blob.name} to {local_path}")
-
-# Initialize HuggingFace embeddings
-embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
-
-# Load the vector store from GCS
-download_vector_store()
-vector_store = FAISS.load_local(
-    folder_path=LOCAL_VECTOR_STORE_PATH,
-    embeddings=embeddings,
-    allow_dangerous_deserialization=True
-)
+# Validate API key
+# if not OPENAI_API_KEY:
+#     raise ValueError("OPENAI_API_KEY is not set. Please ensure it is defined in the .env file or environment variables.")
 
 # Initialize OpenAI client
 openai_client = OpenAI()
 
 chat_history = []
 
+# Initialize HuggingFace embeddings
+embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
+
 # Load the vector store
-# vector_store = FAISS.load_local(folder_path=vector_store_path, 
-#     embeddings=embeddings,
-#     allow_dangerous_deserialization=True  # Required for loading pickled metadata
-# )
+vector_store = FAISS.load_local(folder_path=vector_store_path, 
+    embeddings=embeddings,
+    allow_dangerous_deserialization=True  # Required for loading pickled metadata
+)
+
+# Load the Chroma vector store
 #vector_store = Chroma(persist_directory=vector_store_path, embedding_function=embeddings)
 
 # Initialize tiktoken encoder for token counting
