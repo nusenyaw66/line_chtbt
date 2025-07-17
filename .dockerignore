@@ -8,3 +8,5 @@ __pycache__
 *.md
 .venv
 poetry.lock  # Optional, if you want to rebuild dependencies in Docker
+sa-key.json
+line-chatbot-project-465313-a5fab18ccd4c.json

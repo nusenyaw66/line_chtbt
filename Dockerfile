@@ -1,5 +1,4 @@
-# Use a slim Python image, showed error with 3.13-slim
-FROM python:3.13
+FROM python:3.13-slim
 
 # Set working directory
 WORKDIR /app
@@ -8,12 +7,12 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application files
 COPY . .
 
-# Set environment variables for Flask and Cloud Run
-ENV PORT=4500
-EXPOSE 4500
+# Set environment variables
+ENV PORT=8080
+ENV FLASK_ENV=production
 
-# Run Gunicorn with the Flask app, optimized for Cloud Run
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 webhook_flask_srvr:app
+# Run with Gunicorn, using correct module name
+CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--log-level", "debug", "webhook_flask_srvr:app"]

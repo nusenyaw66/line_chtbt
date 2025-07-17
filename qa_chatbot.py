@@ -8,6 +8,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from openai import OpenAI
 import tiktoken
 from google.cloud import storage
+from google.api_core.exceptions import NotFound, PermissionDenied
 
 # Load environment variables from .env
 load_dotenv()
@@ -15,29 +16,54 @@ load_dotenv()
 # Set TOKENIZERS_PARALLELISM to false to avoid warning
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-# Define the persistent directory
+# Define the persistent directory for local versin only
 # current_dir = os.path.dirname(os.path.abspath(__file__))
 # db_name = "hugging_face_FAISS_with_metadata"
 # vector_store_path = os.path.join(current_dir, "db", db_name)
 
 # GCS configuration
 BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
-VECTOR_STORE_GCS_PATH = "vector_store/hugging_face_FAISS_with_metadata"  # Path in GCS bucket
+VECTOR_STORE_GCS_PREFIX = "vector_store/hugging_face_FAISS_with_metadata"  # Path in GCS bucket
 LOCAL_VECTOR_STORE_PATH = "/tmp/hugging_face_FAISS_with_metadata"  # Temporary local path in container
 
 def download_vector_store():
-    """Download FAISS vector store from GCS to local temp storage."""
+    """Download FAISS vector store from GCS to local temp storage if not already present."""
+    if os.path.exists(LOCAL_VECTOR_STORE_PATH) and os.listdir(LOCAL_VECTOR_STORE_PATH):
+        print("Vector store already downloaded locally. Skipping download.")
+        return
+
     if not BUCKET_NAME:
         raise ValueError("GCS_BUCKET_NAME is not set in environment variables.")
-    client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
-    # Download all files in the GCS directory
-    blobs = bucket.list_blobs(prefix=VECTOR_STORE_GCS_PATH)
+
+    try:
+        client = storage.Client()
+        bucket = client.bucket(BUCKET_NAME)
+        # Check if bucket exists
+        bucket.reload()
+    except NotFound:
+        raise ValueError(f"GCS bucket '{BUCKET_NAME}' not found.")
+    except PermissionDenied:
+        raise PermissionDenied("Insufficient permissions to access GCS bucket.")
+    except Exception as e:
+        raise RuntimeError(f"Error accessing GCS: {e}")
+
+    # Download all files under the prefix
+    blobs = bucket.list_blobs(prefix=VECTOR_STORE_GCS_PREFIX)
     os.makedirs(LOCAL_VECTOR_STORE_PATH, exist_ok=True)
+    downloaded = False
     for blob in blobs:
-        local_path = os.path.join(LOCAL_VECTOR_STORE_PATH, os.path.basename(blob.name))
+        if blob.name.endswith('/'):  # Skip directory markers
+            continue
+        # Preserve relative path structure
+        relative_path = blob.name[len(VECTOR_STORE_GCS_PREFIX):]
+        local_path = os.path.join(LOCAL_VECTOR_STORE_PATH, relative_path)
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
         blob.download_to_filename(local_path)
         print(f"Downloaded {blob.name} to {local_path}")
+        downloaded = True
+
+    if not downloaded:
+        raise ValueError("No files found under GCS prefix. Ensure vector store is uploaded correctly.")
 
 # Initialize HuggingFace embeddings
 embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
