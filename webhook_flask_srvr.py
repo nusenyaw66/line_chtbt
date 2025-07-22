@@ -40,6 +40,12 @@ def callback():
 
     return 'OK'
 
+# Your routes here, e.g., for LINE webhook
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # LINE handling logic
+    return 'OK', 200
+
 # Handle text messages
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
@@ -59,4 +65,5 @@ def handle_message(event):
         )
 
 if __name__ == "__main__":
-    app.run(debug=True, port=4500)
+    port = int(os.environ.get('PORT', 8080))  # Use PORT or fallback to 8080
+    app.run(host='0.0.0.0', port=port, debug=False)  # Bind to all interfaces

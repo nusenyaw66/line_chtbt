@@ -23,8 +23,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # GCS configuration
 BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
-VECTOR_STORE_GCS_PREFIX = "vector_store/hugging_face_FAISS_with_metadata"  # Path in GCS bucket
-LOCAL_VECTOR_STORE_PATH = "/tmp/hugging_face_FAISS_with_metadata"  # Temporary local path in container
+VECTOR_STORE_GCS_PREFIX = "hugging_face_FAISS_with_metadata"  # Path in GCS bucket
+LOCAL_VECTOR_STORE_PATH = "/app/db/hugging_face_FAISS_with_metadata"  # Temporary local path in container
 
 def download_vector_store():
     """Download FAISS vector store from GCS to local temp storage if not already present."""
